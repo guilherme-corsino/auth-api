@@ -10,5 +10,15 @@ export const authController = {
         } catch (error: any) {
             res.status(400).json({ message: error.message })
         }
+    },
+
+    async login(req: Request, res: Response) {
+        try {
+            const { email, senha } = req.body
+            const resultado = await authService.login(email, senha)
+            res.json(resultado)
+        } catch (error: any) {
+            res.status(401).json({ message: error.message })
+        }
     }
 }
