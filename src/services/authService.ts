@@ -20,27 +20,36 @@ export const authService = {
             createdAt: usuario.createdAt
         }
     },
-
     async login(email: string, senha: string) {
-        // busca o usuário
         const usuario = await prisma.usuario.findUnique({ where: { email } })
-
-        // mesma mensagem pra email errado e senha errada — segurança
         if (!usuario) throw new Error('Credenciais inválidas')
 
-        // compara senha com hash
         const senhaCorreta = await bcrypt.compare(senha, usuario.senha)
         if (!senhaCorreta) throw new Error('Credenciais inválidas')
 
-        // gera o JWT
-        const token = jwt.sign(
+        // access token — curto
+        const accessToken = jwt.sign(
             { id: usuario.id, email: usuario.email, role: usuario.role },
             process.env.JWT_SECRET!,
             { expiresIn: '15m' }
         )
 
+        // refresh token — longo
+        const refreshToken = jwt.sign(
+            { id: usuario.id },
+            process.env.JWT_SECRET!,
+            { expiresIn: '7d' }
+        )
+
+        // salva o refresh token no banco
+        await prisma.usuario.update({
+            where: { id: usuario.id },
+            data: { refreshToken }
+        })
+
         return {
-            token,
+            accessToken,
+            refreshToken,
             usuario: {
                 id: usuario.id,
                 nome: usuario.nome,
@@ -48,5 +57,27 @@ export const authService = {
                 role: usuario.role
             }
         }
+    },
+    async refresh(refreshToken: string) {
+        if (!refreshToken) throw new Error('Refresh token não fornecido')
+
+        // verifica se o token é válido
+        const payload = jwt.verify(refreshToken, process.env.JWT_SECRET!) as { id: number }
+
+        // busca o usuário e verifica se o refresh token bate com o do banco
+        const usuario = await prisma.usuario.findUnique({ where: { id: payload.id } })
+
+        if (!usuario || usuario.refreshToken !== refreshToken) {
+            throw new Error('Refresh token inválido')
+        }
+
+        // gera novo access token
+        const accessToken = jwt.sign(
+            { id: usuario.id, email: usuario.email, role: usuario.role },
+            process.env.JWT_SECRET!,
+            { expiresIn: '15m' }
+        )
+
+        return { accessToken }
     }
 }

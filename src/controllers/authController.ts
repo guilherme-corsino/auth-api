@@ -20,5 +20,14 @@ export const authController = {
         } catch (error: any) {
             res.status(401).json({ message: error.message })
         }
+    },
+    async refresh(req: Request, res: Response) {
+        try {
+            const { refreshToken } = req.body
+            const resultado = await authService.refresh(refreshToken)
+            res.json(resultado)
+        } catch (error: any) {
+            res.status(401).json({ message: error.message })
+        }
     }
 }
