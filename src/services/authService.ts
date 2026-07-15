@@ -79,5 +79,12 @@ export const authService = {
         )
 
         return { accessToken }
+
+    },
+    async logout(refreshToken: string) {
+        await prisma.usuario.updateMany({
+            where: { refreshToken },
+            data: { refreshToken: null }
+        })
     }
 }

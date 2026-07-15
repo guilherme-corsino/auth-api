@@ -2,11 +2,13 @@ import 'dotenv/config'
 import express from 'express'
 import authRouter from './routes/auth'
 import usuarioRouter from './routes/usuario'
+import cookieParser from 'cookie-parser'
 
 const app = express()
 const PORT = process.env.PORT || 3000
 
 app.use(express.json())
+app.use(cookieParser())
 
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() })
