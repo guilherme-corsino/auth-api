@@ -1,10 +1,12 @@
 import { Router } from 'express'
 import { authController } from '../controllers/authController'
+import { validate } from '../middlewares/validate'
+import { registerSchema, loginSchema } from '../schemas/authSchema'
 
 const router = Router()
 
-router.post('/register', authController.register)
-router.post('/login', authController.login)
+router.post('/register', validate(registerSchema), authController.register)
+router.post('/login', validate(loginSchema), authController.login)
 router.post('/refresh', authController.refresh)
 router.post('/logout', authController.logout)
 
