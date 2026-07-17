@@ -19,6 +19,10 @@ const options = {
         },
         servers: [
             {
+                url: 'https://zippy-enchantment-production-dce7.up.railway.app',
+                description: 'Servidor de produção',
+            },
+            {
                 url: 'http://localhost:3000',
                 description: 'Servidor local',
             },
